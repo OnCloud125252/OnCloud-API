@@ -28,21 +28,18 @@ jobs:
       - name: Generate GitHub summary
         if: always()
         run: |
-          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-            echo "## :white_check_mark: Push on \`main\` branch" >> $GITHUB_STEP_SUMMARY
-            echo "A Docker image build and push will be triggered." >> $GITHUB_STEP_SUMMARY
-          elif [[ "${{ steps.check_commit_message.outputs.commit_message }}" != "" ]]; then
-            echo "## :white_check_mark: Versioned push on a non-main branch" >> $GITHUB_STEP_SUMMARY
+          if [[ "${{ steps.check_commit_message.outputs.commit_message }}" != "" ]]; then
+            echo "## :white_check_mark: Versioned push" >> $GITHUB_STEP_SUMMARY
             echo "Initiating Docker image build and push for version \`${{ steps.check_commit_message.outputs.commit_message }}\`." >> $GITHUB_STEP_SUMMARY
           else
             echo "## :x: This push does not qualify as a version push" >> $GITHUB_STEP_SUMMARY
-            echo "Skipping the build and push process on non-main branch." >> $GITHUB_STEP_SUMMARY
+            echo "Skipping the build and push process." >> $GITHUB_STEP_SUMMARY
           fi
 
   build-and-push:
     name: Build and Push Docker Image
     needs: [validate-commit-message]
-    if: ${{ github.ref == 'refs/heads/main' || needs.validate-commit-message.outputs.commit_message != '' }}
+    if: ${{ needs.validate-commit-message.outputs.commit_message != '' }}
     runs-on: blacksmith-32vcpu-ubuntu-2204
     steps:
       - name: Checkout code
