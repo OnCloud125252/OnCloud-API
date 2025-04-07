@@ -1,7 +1,7 @@
 # -------------------------
 # 1) Base image
 # -------------------------
-FROM node:18-bullseye-slim AS base
+FROM node:22-bullseye-slim AS base
 
 # Prepare pnpm
 ENV PNPM_HOME="/pnpm"
