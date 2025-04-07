@@ -1,0 +1,8 @@
+services:
+  oncloud-api:
+    image: oncloud-api:0.0.1
+    container_name: oncloud-api
+    ports:
+      - "3002:3000"
+    env_file: .env
+    restart: unless-stopped
