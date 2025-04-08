@@ -102,3 +102,99 @@ jobs:
           echo "- \`${{ vars.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "Docker image built and pushed successfully in ${ELAPSED}s." >> $GITHUB_STEP_SUMMARY
+
+
+  check-development-backend-deployment:
+    name: Check Backend Deployment
+    runs-on: ubuntu-latest
+    needs: [build-and-push]
+    env:
+      BACKEND_URL: ${{ vars.BACKEND_URL }}
+      TIMEOUT: 300
+      INTERVAL: 3
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Get current version from package.json
+        id: get_current_version
+        run: echo "CURRENT_VERSION=$(jq -r '.version' package.json)" >> $GITHUB_ENV
+
+      - name: Check backend version consistency
+        id: check_backend
+        shell: bash
+        run: |
+          set +e
+          START_TIME=$(date +%s)
+          status=""
+          while true; do
+            CURRENT_TIME=$(date +%s)
+            ELAPSED=$(( CURRENT_TIME - START_TIME ))
+            if [ $ELAPSED -ge $TIMEOUT ]; then
+              echo "ERROR: Condition not met after 5 minutes."
+              echo "## :x: Development Deployment Failed" >> $GITHUB_STEP_SUMMARY
+              echo "Unable to verify development deployment after 5 minutes." >> $GITHUB_STEP_SUMMARY
+              status="failed"
+              break
+            fi
+
+            response=$(curl -s "$BACKEND_URL" || echo "")
+            if [ -z "$response" ]; then
+              echo "Request failed: no response received. Retrying in $INTERVAL seconds..."
+              sleep $INTERVAL
+              continue
+            fi
+            version=$(echo "$response" | jq -r '.data.version.current' 2>/dev/null || echo "null")
+            if [ -z "$version" ] || [ "$version" == "null" ]; then
+              echo "Request failed: unable to parse version. Retrying in $INTERVAL seconds..."
+              sleep $INTERVAL
+              continue
+            fi
+            if [ "$version" != "$CURRENT_VERSION" ]; then
+              echo "Version mismatch: expected $CURRENT_VERSION, got $version. Retrying in $INTERVAL seconds..."
+              sleep $INTERVAL
+              continue
+            fi
+
+            echo "Initial check passed with version $version. Performing additional 5 verifications..."
+
+            all_checks_success=true
+            for i in {1..5}; do
+              response_check=$(curl -s "$BACKEND_URL" || echo "")
+              if [ -z "$response_check" ]; then
+                echo "Verification request $i failed: no response received."
+                all_checks_success=false
+                break
+              fi
+              version_check=$(echo "$response_check" | jq -r '.data.version.current' 2>/dev/null || echo "null")
+              if [ -z "$version_check" ] || [ "$version_check" == "null" ]; then
+                echo "Verification request $i failed: unable to parse version."
+                all_checks_success=false
+                break
+              fi
+              if [ "$version_check" != "$CURRENT_VERSION" ]; then
+                echo "Verification request $i mismatch: expected $CURRENT_VERSION, got $version_check."
+                all_checks_success=false
+                break
+              fi
+            done
+
+            if [ "$all_checks_success" = true ]; then
+              echo "Success: All 5 verification requests returned the current version: $CURRENT_VERSION"
+              echo "## :rocket: Development Deployment Success" >> $GITHUB_STEP_SUMMARY
+              echo "Development deployment verified successfully in ${ELAPSED}s." >> $GITHUB_STEP_SUMMARY
+              echo "- Backend URL: $BACKEND_URL" >> $GITHUB_STEP_SUMMARY
+              echo "- Backend version: $CURRENT_VERSION" >> $GITHUB_STEP_SUMMARY
+              status="success"
+              break
+            else
+              echo "Verification failed. Continuing to poll..."
+            fi
+
+            sleep $INTERVAL
+          done
+          echo "status=$status" >> $GITHUB_OUTPUT
+          if [ "$status" = "failed" ]; then
+            exit 1
+          fi
+          echo "ELAPSED=$ELAPSED" >> $GITHUB_ENV
