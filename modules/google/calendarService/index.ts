@@ -13,7 +13,7 @@ export class GoogleCalendarService {
   private calendar: calendar_v3.Calendar;
   private timezone: string;
 
-  constructor(config?: CalendarServiceConfig) {
+  constructor(config: CalendarServiceConfig) {
     const keyFile =
       environmentVariable.google.calendar.serviceAccountKeyFileContent();
 
@@ -24,7 +24,7 @@ export class GoogleCalendarService {
     });
 
     this.calendar = google.calendar({ version: "v3", auth: jwtClient });
-    this.timezone = config?.timezone || "Asia/Taipei";
+    this.timezone = config.timezone;
   }
 
   /**
