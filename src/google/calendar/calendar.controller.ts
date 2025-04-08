@@ -1,12 +1,11 @@
-import { Controller, Get, Res, UseGuards } from "@nestjs/common";
+import { Controller, Get, Res } from "@nestjs/common";
 import { Response } from "express";
 
 import { dynamicRoute } from "modules/nestjs/dynamicRoute";
-import { sendResponse } from "modules/nestjs/sendResponse";
-import { AuthGuard } from "modules/nestjs/guards/AuthGuard";
+import { sendJsonResponse } from "modules/nestjs/sendResponse";
 import { CalendarService } from "./calendar.service";
 
-@UseGuards(AuthGuard)
+// @UseGuards(AuthGuard)
 @Controller(dynamicRoute.create())
 export class CalendarController {
   constructor(private calendarService: CalendarService) {}
@@ -15,20 +14,35 @@ export class CalendarController {
   async getTodayEvents(@Res() response: Response) {
     const eventList = await this.calendarService.getTodayEvents();
 
-    return sendResponse(response, eventList);
+    const aiAgentResponse =
+      await this.calendarService.getAiAgentResponse(eventList);
+
+    return sendJsonResponse(response, aiAgentResponse, {
+      customDataKey: "aiAgentResponse",
+    });
   }
 
   @Get("get-tomorrow-events")
   async getTomorrowEvents(@Res() response: Response) {
     const eventList = await this.calendarService.getTomorrowEvents();
 
-    return sendResponse(response, eventList);
+    const aiAgentResponse =
+      await this.calendarService.getAiAgentResponse(eventList);
+
+    return sendJsonResponse(response, aiAgentResponse, {
+      customDataKey: "aiAgentResponse",
+    });
   }
 
   @Get("get-upcoming-week-events")
   async getUpcomingWeekEvents(@Res() response: Response) {
     const eventList = await this.calendarService.getUpcomingWeekEvents();
 
-    return sendResponse(response, eventList);
+    const aiAgentResponse =
+      await this.calendarService.getAiAgentResponse(eventList);
+
+    return sendJsonResponse(response, aiAgentResponse, {
+      customDataKey: "aiAgentResponse",
+    });
   }
 }
