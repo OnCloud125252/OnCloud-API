@@ -16,4 +16,7 @@ export const environmentVariable = {
         ),
     },
   },
+  openai: {
+    apiKey: () => getEnv(EnvKey.OPENAI_API_KEY),
+  },
 };
