@@ -53,13 +53,19 @@ export class CalendarService {
         start: todayStart.toISOString(),
         end: todayEnd.toISOString(),
       },
-      eventList: eventList.map((event) => ({
-        calendarCategory: event.calendarName,
-        title: event.summary,
-        description: event.description,
-        start: event.start,
-        end: event.end,
-      })),
+      eventList: eventList
+        .map((event) => ({
+          calendarCategory: event.calendarName,
+          title: event.summary,
+          description: event.description,
+          start: event.start,
+          end: event.end,
+        }))
+        .sort(
+          (a, b) =>
+            new Date(a.start?.dateTime || a.start?.date).getTime() -
+            new Date(b.start?.dateTime || b.start?.date).getTime(),
+        ),
     };
   }
 
@@ -96,13 +102,19 @@ export class CalendarService {
         start: tomorrowStart.toISOString(),
         end: tomorrowEnd.toISOString(),
       },
-      eventList: eventList.map((event) => ({
-        calendarCategory: event.calendarName,
-        title: event.summary,
-        description: event.description,
-        start: event.start,
-        end: event.end,
-      })),
+      eventList: eventList
+        .map((event) => ({
+          calendarCategory: event.calendarName,
+          title: event.summary,
+          description: event.description,
+          start: event.start,
+          end: event.end,
+        }))
+        .sort(
+          (a, b) =>
+            new Date(a.start?.dateTime || a.start?.date).getTime() -
+            new Date(b.start?.dateTime || b.start?.date).getTime(),
+        ),
     };
   }
 
@@ -119,7 +131,7 @@ export class CalendarService {
     const weekEnd = new Date(
       todayDate.getFullYear(),
       todayDate.getMonth(),
-      todayDate.getDate() + 6,
+      todayDate.getDate() + 7,
       23,
       59,
       59,
@@ -138,13 +150,19 @@ export class CalendarService {
         start: weekStart.toISOString(),
         end: weekEnd.toISOString(),
       },
-      eventList: eventList.map((event) => ({
-        calendarCategory: event.calendarName,
-        title: event.summary,
-        description: event.description,
-        start: event.start,
-        end: event.end,
-      })),
+      eventList: eventList
+        .map((event) => ({
+          calendarCategory: event.calendarName,
+          title: event.summary,
+          description: event.description,
+          start: event.start,
+          end: event.end,
+        }))
+        .sort(
+          (a, b) =>
+            new Date(a.start?.dateTime || a.start?.date).getTime() -
+            new Date(b.start?.dateTime || b.start?.date).getTime(),
+        ),
     };
   }
 
@@ -173,6 +191,12 @@ export class CalendarService {
     );
 
     const calendarResults = await Promise.all(calendarPromises);
-    return calendarResults.flat();
+    return calendarResults
+      .flat()
+      .sort(
+        (a, b) =>
+          new Date(a.start?.dateTime || a.start?.date).getTime() -
+          new Date(b.start?.dateTime || b.start?.date).getTime(),
+      );
   }
 }

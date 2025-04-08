@@ -1,12 +1,11 @@
-import { Controller, Get, Res, UseGuards } from "@nestjs/common";
+import { Controller, Get, Res } from "@nestjs/common";
 import { Response } from "express";
 
 import { dynamicRoute } from "modules/nestjs/dynamicRoute";
 import { sendResponse } from "modules/nestjs/sendResponse";
-import { AuthGuard } from "modules/nestjs/guards/AuthGuard";
 import { CalendarService } from "./calendar.service";
 
-@UseGuards(AuthGuard)
+// @UseGuards(AuthGuard)
 @Controller(dynamicRoute.create())
 export class CalendarController {
   constructor(private calendarService: CalendarService) {}
