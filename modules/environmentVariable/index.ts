@@ -9,6 +9,11 @@ export const environmentVariable = {
     accessToken: () => getEnv(EnvKey.APP_ACCESS_TOKEN),
   },
   google: {
+    maps: {
+      all: {
+        apiKey: () => getEnv(EnvKey.GOOGLE_MAPS_API_KEY),
+      },
+    },
     calendar: {
       serviceAccountKeyFileContent: () =>
         JSON.parse(

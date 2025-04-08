@@ -14,6 +14,7 @@ export class OpenAI {
   private generateSystemMessage?: () => string;
   private responseFormat?: ChatCompletionCreateParamsBase["response_format"];
   private toolbox?: ToolBox;
+  private aiModel: "gpt-4o-mini" | "gpt-4o" | "o1" | "o1-mini";
 
   private readonly openai: _OpenAI = new _OpenAI({
     apiKey: environmentVariable.openai.apiKey(),
@@ -31,17 +32,17 @@ export class OpenAI {
     systemMessageGenerator,
     responseFormat,
     toolbox,
+    aiModel = "gpt-4o-mini",
   }: {
-    currentTime?: Date;
     systemMessageGenerator?: () => string;
     responseFormat?: ChatCompletionCreateParamsBase["response_format"];
     toolbox?: ToolBox;
+    aiModel?: OpenAI["aiModel"];
   } = {}) {
     this.generateSystemMessage = systemMessageGenerator;
-
     this.responseFormat = responseFormat;
-
     this.toolbox = toolbox;
+    this.aiModel = aiModel;
   }
 
   onToolCall(callback: (toolCall: ChatCompletionMessageToolCall) => void) {
@@ -82,6 +83,7 @@ export class OpenAI {
         openai,
         onToolCallCallback,
         onToolCallResultCallback,
+        this.aiModel,
         responseFormat,
         toolbox,
       )

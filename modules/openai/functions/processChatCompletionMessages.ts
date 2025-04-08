@@ -15,6 +15,7 @@ export async function processChatCompletionMessages(
   openai: OpenAI["openai"],
   onToolCallCallback: OpenAI["onToolCallCallback"],
   onToolCallResultCallback: OpenAI["onToolCallResultCallback"],
+  aiModel: OpenAI["aiModel"],
   responseFormat?: OpenAI["responseFormat"],
   toolbox?: ToolBox,
 ) {
@@ -23,7 +24,7 @@ export async function processChatCompletionMessages(
   const clonedMessages = cloneDeep(messages);
 
   const response = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
+    model: aiModel,
     messages: clonedMessages,
     tools: toolsDefinitions && tools ? toolsDefinitions : undefined,
     response_format: responseFormat,
@@ -95,6 +96,7 @@ export async function processChatCompletionMessages(
       openai,
       onToolCallCallback,
       onToolCallResultCallback,
+      aiModel,
       responseFormat,
       toolbox,
     );

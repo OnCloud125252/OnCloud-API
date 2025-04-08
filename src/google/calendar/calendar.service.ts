@@ -2,6 +2,8 @@ import { Injectable } from "@nestjs/common";
 
 import { GoogleCalendarService } from "modules/google/calendarService";
 import { OpenAI } from "modules/openai";
+import { buildToolbox } from "modules/openai/functions/buildToolbox";
+import { get_place_title_by_address } from "modules/openai/functions/tools/googleMaps/get_place_title_by_address";
 
 @Injectable()
 export class CalendarService {
@@ -25,6 +27,10 @@ export class CalendarService {
       "d4229fa031fb7b2472baac43572f9e65e12a6b39e5505ff045ecf66f8714e006@group.calendar.google.com",
   };
   private readonly openai = new OpenAI({
+    aiModel: "gpt-4o-mini",
+    toolbox: buildToolbox({
+      get_place_title_by_address,
+    }),
     systemMessageGenerator: () =>
       `你是一位專業的個人助理，負責整理並摘要用戶的 Google Calendar 日程安排。請用溫暖友善的繁體中文回覆，遵循以下格式：
 
@@ -43,10 +49,11 @@ export class CalendarService {
    - 週一至週五標記為平日，週六、週日標記為週末
    - 如果有重複事件，在事件標題後加註「(每週/每月/每日)」
    - 使用 🔴 標記高優先級或重要事件（如果事件標題為重要的事項）
-   - 如果有地點資訊，以「📍 地點：xxx」的格式展示，使用你所知道的地名
+   - 如果有地點資訊，以「📍 地點：xxx」的格式展示，如果地點資訊是明確的地點（教室、操場等），則直接顯示。如果地點資訊屬於地址，請使用 "get_place_title_by_address" 函式來取得資料
    - 如果有參與者資訊，以「👥 參與者：xxx, xxx」的格式展示（限制在 3 人以內，超過則顯示「及 X 人」）
    - 如果有事件描述，以「📝 筆記：xxx」的格式展示
    - 不必幫所有事件都提供描述，只需提供有意義的資訊即可
+   - 不必顯示沒有事件的日期
    - 跨天事件在標題處標明持續時間，如「## 09:00-次日15:00 研討會（持續 2 天）」
 
 5. 特殊情況處理：
@@ -76,7 +83,7 @@ export class CalendarService {
         calendarCategory: "行事曆類別",
         title: "事件標題",
         description: "事件描述", // 可能為空
-        location: "事件地點", // 可能為空
+        location: "事件地點資訊", // 可能為空
         attendees: ["參與者1", "參與者2"], // 可能為空或不存在
         isAllDay: true/false, // 表示是否為全天事件，可能不存在
         start: "起始日期時間",
@@ -132,10 +139,10 @@ export class CalendarService {
     const aiAgentResponse = await this.openai.chat([
       {
         role: "user",
-        content: `以下是真實的行事曆資料:
-   \`\`\`json
-   ${JSON.stringify(eventList)}
-   \`\`\``,
+        content: `以下是我的行事曆資料:
+\`\`\`json
+${JSON.stringify(eventList)}
+\`\`\``,
       },
     ]);
 
