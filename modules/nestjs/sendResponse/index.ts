@@ -1,7 +1,7 @@
 import { HttpStatus } from "@nestjs/common";
 import { Response } from "express";
 
-export function sendResponse<T>(
+export function sendJsonResponse<T>(
   response: Response,
   data: T,
   options?: {

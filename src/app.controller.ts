@@ -3,7 +3,7 @@ import { Controller, Get, Res } from "@nestjs/common";
 import { Response } from "express";
 
 import { dynamicRoute } from "modules/nestjs/dynamicRoute";
-import { sendResponse } from "modules/nestjs/sendResponse";
+import { sendJsonResponse } from "modules/nestjs/sendResponse";
 import { readableTime } from "modules/readableTime";
 
 dynamicRoute.setRootDir(__dirname);
@@ -15,7 +15,7 @@ export class AppController {
 
   @Get()
   async welcome(@Res() response: Response) {
-    return sendResponse(response, {
+    return sendJsonResponse(response, {
       message: "Welcome to OnCloud API!",
       uptime: {
         value: process.uptime(),
