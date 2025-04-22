@@ -14,7 +14,7 @@ export class OpenAI {
   private generateSystemMessage?: () => string;
   private responseFormat?: ChatCompletionCreateParamsBase["response_format"];
   private toolbox?: ToolBox;
-  private aiModel: "gpt-4o-mini" | "gpt-4o" | "o1" | "o1-mini";
+  private aiModel: "gpt-4o-mini" | "gpt-4o" | "o1" | "o1-mini" | "gpt-4.1-nano";
 
   private readonly openai: _OpenAI = new _OpenAI({
     apiKey: environmentVariable.openai.apiKey(),
